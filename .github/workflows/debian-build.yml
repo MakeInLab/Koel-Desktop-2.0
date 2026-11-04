@@ -25,7 +25,7 @@ jobs:
           npm test
       - name: Build Debian and portable archive
         run: npm run dist:linux
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Koel-Desktop-Debian-unsigned
           path: |
