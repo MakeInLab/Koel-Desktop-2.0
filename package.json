@@ -1,0 +1,60 @@
+{
+  "name": "koel-desktop-2",
+  "version": "0.7.6",
+  "private": true,
+  "description": "Koel Desktop 2.0 - client Windows et Linux pour Koel 9.15+, playlists et Discord",
+  "main": "./out/main/index.js",
+  "author": "Koel Desktop 2.0 contributors",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "npm run typecheck && electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.web.json && tsc --noEmit -p tsconfig.node.json",
+    "test": "node --test tests/*.mjs",
+    "test:static": "npm run test",
+    "verify": "npm run typecheck && npm run test && npm run build:app",
+    "build:app": "electron-vite build",
+    "dist": "npm run dist:win",
+    "dist:dir": "npm run build && node scripts/package-windows.mjs --dir-only",
+    "dist:win": "npm run build && node scripts/package-windows.mjs",
+    "audit": "npm audit",
+    "audit:production": "npm audit --omit=dev",
+    "predev": "node scripts/sync-version.mjs",
+    "pretypecheck": "node scripts/sync-version.mjs",
+    "pretest": "node scripts/sync-version.mjs",
+    "prebuild:app": "node scripts/sync-version.mjs",
+    "prepreview": "node scripts/sync-version.mjs",
+    "version:sync": "node scripts/sync-version.mjs",
+    "dist:portable": "npm run build && node scripts/package-windows.mjs --portable-only",
+    "audit:report": "node scripts/audit-dependencies.mjs",
+    "audit:check": "node scripts/audit-dependencies.mjs --strict",
+    "security:fix": "node scripts/repair-dependencies.mjs",
+    "security:verify": "npm run audit:check",
+    "dist:setup": "npm run build && node scripts/package-windows.mjs --setup-only",
+    "package:win": "node scripts/package-windows.mjs",
+    "dist:linux": "npm run build && node scripts/package-linux.mjs",
+    "dist:deb": "npm run build && node scripts/package-linux.mjs --deb-only",
+    "dist:linux-portable": "npm run build && node scripts/package-linux.mjs --portable-only",
+    "package:linux": "node scripts/package-linux.mjs"
+  },
+  "dependencies": {
+    "pinia": "3.0.4",
+    "vue": "3.5.44",
+    "vue-router": "4.5.1",
+    "discord-rpc": "4.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@vitejs/plugin-vue": "6.0.10",
+    "electron": "45.2.1",
+    "electron-vite": "6.0.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "vue-tsc": "3.3.13",
+    "resedit": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=22.18.0 <23 || >=24.11.0"
+  },
+  "packageManager": "npm@11.6.2"
+}

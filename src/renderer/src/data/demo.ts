@@ -1,0 +1,1 @@
+export function formatDuration(seconds: number): string { const v = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0; return `${Math.floor(v / 60)}:${String(v % 60).padStart(2, '0')}` }
