@@ -1,0 +1,44 @@
+# Dependencies and build outputs
+node_modules/
+out/
+dist/
+release/
+coverage/
+.cache/
+.vite/
+*.tsbuildinfo
+
+# Local reports and debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+audit-reports/
+.DS_Store
+Thumbs.db
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+*.pem
+*.key
+*.mobileprovision
+*.cer
+*.crt
+*.jks
+*.keystore
+*.asc
+koel-session.enc
+koel-session.enc.tmp
+desktop-settings.json
+window-bounds.json
+*.secret
+.secrets/
+
+# Personal or local directories
+.vscode/
+.idea/
+__pycache__/
