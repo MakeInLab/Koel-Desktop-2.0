@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/version-0.7.6-c98bde?style=for-the-badge)](#-t%C3%A9l%C3%A9chargement)
 [![Windows](https://img.shields.io/badge/Windows-Setup_%26_Portable-c98bde?style=for-the-badge&logo=windows11&logoColor=white)](https://github.com/MakeInLab/Koel-Desktop-2.0/releases/tag/v0.7.6)
 [![Debian](https://img.shields.io/badge/Debian-.deb_%26_archive-272338?style=for-the-badge&logo=debian&logoColor=white)](#-t%C3%A9l%C3%A9chargement)
-[![MIT](https://img.shields.io/badge/Licence-MIT-272338?style=for-the-badge)](LICENSE)
+[![MIT](https://img.shields.io/badge/Licence-MIT-c98bde?style=for-the-badge)](LICENSE)
 
 **Une nouvelle façon de profiter de votre bibliothèque Koel.**  
 Un client musical de bureau élégant, personnalisable et indépendant, pour Windows et Debian.
