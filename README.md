@@ -5,7 +5,7 @@
 <br />
 
 [![Version](https://img.shields.io/badge/version-0.7.6-c98bde?style=for-the-badge)](#-t%C3%A9l%C3%A9chargement)
-[![Windows](https://img.shields.io/badge/Windows-Setup_%26_Portable-272338?style=for-the-badge&logo=windows11&logoColor=white)](#-t%C3%A9l%C3%A9chargement)
+[![Windows](https://img.shields.io/badge/Windows-Setup_%26_Portable-272338?style=for-the-badge&logo=windows11&logoColor=white)](https://github.com/MakeInLab/Koel-Desktop-2.0/releases/tag/v0.7.6)
 [![Debian](https://img.shields.io/badge/Debian-.deb_%26_archive-272338?style=for-the-badge&logo=debian&logoColor=white)](#-t%C3%A9l%C3%A9chargement)
 [![MIT](https://img.shields.io/badge/Licence-MIT-272338?style=for-the-badge)](LICENSE)
 
@@ -70,7 +70,7 @@ Les versions Windows et Debian sont construites à partir du même code source. 
 ## 🚀 Démarrage rapide
 
 ```bash
-git clone https://github.com/VOTRE_PSEUDO/koel-desktop.git
+git clone https://github.com/MakeInLab/koel-desktop.git
 cd koel-desktop
 npm install
 npm run typecheck
@@ -78,7 +78,7 @@ npm test
 npm run dev
 ```
 
-Remplacez `VOTRE_PSEUDO` par le propriétaire réel du dépôt. Pour la connexion, utilisez l'adresse HTTPS de votre serveur Koel (HTTP local autorisé pour `localhost`).
+Pour la connexion, utilisez l'adresse HTTPS de votre serveur Koel (HTTP local autorisé pour `localhost`).
 
 <details>
 <summary><strong>Electron ne démarre pas sur Windows ?</strong></summary>
