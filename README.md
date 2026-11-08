@@ -12,7 +12,7 @@
 **Une nouvelle façon de profiter de votre bibliothèque Koel.**  
 Un client musical de bureau élégant, personnalisable et indépendant, pour Windows et Debian.
 
-[Découvrir les fonctionnalités](#-fonctionnalit%C3%A9s) · [Installer](#-t%C3%A9l%C3%A9chargement) · [Compiler](#-d%C3%A9veloppement) · [Contribuer](CONTRIBUTING.md)
+[Découvrir les fonctionnalités](#-fonctionnalit%C3%A9s) · [Contribuer](CONTRIBUTING.md)
 
 </div>
 
