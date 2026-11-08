@@ -23,7 +23,7 @@ Un client musical de bureau élégant, personnalisable et indépendant, pour Win
 <div align="center">
   <img src="docs/images/app-overview.png" alt="Interface principale de Koel Desktop : navigation, albums et lecteur musical" width="100%" />
   <br />
-  <sub>Capture réelle d'une version de développement sous Windows. Identifiants et serveur masqués pour la confidentialité. L'apparence peut varier selon le thème et la version.</sub>
+  <sub>Capture réelle d'une version sous Windows. L'apparence peut varier selon le thème.</sub>
 </div>
 
 <br />
@@ -33,7 +33,7 @@ Un client musical de bureau élégant, personnalisable et indépendant, pour Win
 <div align="center">
   <img src="docs/images/player-controls.png" alt="Détail du lecteur : commandes de lecture, progression, volume et bouton mini-player" width="100%" />
   <br />
-  <sub>Zoom sur le lecteur inférieur de la capture précédente.</sub>
+  <sub>Zoom sur le mini player.</sub>
 </div>
 
 ## ✨ Fonctionnalités
@@ -63,7 +63,7 @@ Les versions Windows et Debian sont construites à partir du même code source. 
 | Debian x64 | `.deb` | Installation via `apt` |
 | Linux x64 | `.tar.gz` | Archive portable |
 
-➡️ **[Consulter les Releases GitHub](../../releases)** pour les versions publiées. Tant qu'aucune Release n'est disponible, les fichiers générés par la CI sont consultables dans l'onglet **Actions** après un build réussi.
+➡️ **[Consulter les Releases GitHub](../../releases)** pour les versions publiées.
 
 > **Prérequis :** un serveur Koel accessible et un système Windows x64 ou Linux x64. Pour construire le projet depuis les sources, utiliser Node.js **24.11+** et npm.
 
@@ -108,13 +108,6 @@ Le client repose sur **Electron**, **Vue 3**, **TypeScript**, **Vite**, **Pinia*
 
 Pour le packaging, voir [Windows](PACKAGING-WINDOWS.md) et [Debian](DEBIAN.md). Les workflows dans `.github/workflows/` permettent aussi de construire sur GitHub Actions.
 
-## 🔐 Sécurité et vie privée
-
-- Les secrets et informations de connexion **ne doivent jamais être committés** dans le dépôt.
-- Les fichiers de session, certificats, dossiers de compilation et rapports locaux sont exclus par `.gitignore`.
-- Les audits npm aident à identifier des dépendances vulnérables, sans garantir l'absence de failles.
-- Pour signaler un problème de sécurité, consulter [SECURITY.md](SECURITY.md).
-
 ## 🤝 Participer
 
 Les suggestions, rapports de bugs et contributions sont les bienvenus. Lire [CONTRIBUTING.md](CONTRIBUTING.md) avant une proposition de modification.
@@ -127,4 +120,4 @@ Les suggestions, rapports de bugs et contributions sont les bienvenus. Lire [CON
 
 Ce projet est distribué sous licence **[MIT](LICENSE)**.
 
-**Koel Desktop est un client communautaire non officiel, indépendant du projet Koel.** Il n'est pas affilié à Spotify. Koel et les autres marques citées restent la propriété de leurs détenteurs respectifs.
+**Koel Desktop 2.0 est un client communautaire non officiel, indépendant du projet Koel.** Il n'est pas affilié à Koel. Koel et les autres marques citées restent la propriété de leurs détenteurs respectifs.
