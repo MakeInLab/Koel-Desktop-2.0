@@ -9,14 +9,14 @@ export type KoelSession = { url: string; email: string; user: KoelUser; version:
 export type KoelLoginResult = { kind: 'connected'; session: KoelSession } | { kind: 'two-factor'; message: string }
 export type KoelPage = { songs: KoelSong[]; nextPage: number | null; total: number | null }
 export type KoelCatalogPage<T> = { items: T[]; nextPage: number | null; total: number | null }
-export type KoelSearchResult = { songs: KoelSong[]; albums: KoelAlbum[]; artists: KoelArtist[] }
+export type KoelSearchResult = { songs: KoelSong[]; albums: KoelAlbum[]; artists: KoelArtist[]; warnings?: string[] }
 export interface KoelDesktopAPI {
   restore(): Promise<KoelSession | null>
   login(credentials: KoelCredentials): Promise<KoelLoginResult>
   verifyTwoFactor(code: string): Promise<KoelSession>
   loadSongs(page: number): Promise<KoelPage>
-  loadAlbums(page: number): Promise<KoelCatalogPage<KoelAlbum>>
-  loadArtists(page: number): Promise<KoelCatalogPage<KoelArtist>>
+  loadAlbums(page: number, perPage?: number): Promise<KoelCatalogPage<KoelAlbum>>
+  loadArtists(page: number, perPage?: number): Promise<KoelCatalogPage<KoelArtist>>
   loadPlaylists(): Promise<KoelPlaylist[]>
   createPlaylist(name: string, description: string): Promise<KoelPlaylist>
   addPlaylistSongs(playlistId: string, songIds: string[]): Promise<void>

@@ -29,6 +29,32 @@ function save(key: string, value: string | boolean): void {
   try { localStorage.setItem(key, String(value)) } catch { /* storage unavailable */ }
 }
 
+/** Apply the selected theme synchronously, including the document outside Vue's shell. */
+export function applyAppearance(options: {
+  accent: AccentColor
+  surface: SurfaceStyle
+  corners: CornerStyle
+  fontSize: FontSize
+  reducedMotion: boolean
+}): void {
+  const root = document.documentElement
+  const color = accents[options.accent]
+  const bg = surfaces[options.surface]
+  root.style.setProperty('--user-accent', color.main)
+  root.style.setProperty('--user-accent-hover', color.hover)
+  root.style.setProperty('--user-accent-rgb', color.rgb)
+  root.style.setProperty('--user-base', bg.base)
+  root.style.setProperty('--user-sidebar', bg.sidebar)
+  root.style.setProperty('--user-panel', bg.panel)
+  root.style.setProperty('--user-elevated', bg.elevated)
+  root.style.setProperty('--user-border', bg.border)
+  root.dataset.cornerStyle = options.corners
+  root.dataset.fontSize = options.fontSize
+  root.dataset.reduceMotion = String(options.reducedMotion)
+  // Native form controls and scrollbars should keep their dark appearance.
+  root.style.colorScheme = 'dark'
+}
+
 export const usePreferencesStore = defineStore('preferences', () => {
   const compact = ref(loadChoice<'true' | 'false'>('koel:compact', { true: true, false: false }, 'false') === 'true')
   const accent = ref<AccentColor>(loadChoice('koel:appearance:accent', accents, 'violet'))
@@ -37,29 +63,40 @@ export const usePreferencesStore = defineStore('preferences', () => {
   const fontSize = ref<FontSize>(loadChoice<FontSize>('koel:appearance:font', { normal: true, large: true }, 'normal'))
   const reducedMotion = ref(loadChoice<'true' | 'false'>('koel:appearance:motion', { true: true, false: false }, 'false') === 'true')
 
-  // Keep the preferences global, including overlays rendered outside the Vue shell.
+  const sync = (): void => applyAppearance({
+    accent: accent.value, surface: surface.value, corners: corners.value,
+    fontSize: fontSize.value, reducedMotion: reducedMotion.value
+  })
+
+  // Immediate + sync: avoid a frame showing the previous palette after a click.
+  // Storage writes are separate from painting to avoid saving stale values on startup.
   watch([compact, accent, surface, corners, fontSize, reducedMotion], () => {
+    sync()
     save('koel:compact', compact.value)
     save('koel:appearance:accent', accent.value)
     save('koel:appearance:surface', surface.value)
     save('koel:appearance:corners', corners.value)
     save('koel:appearance:font', fontSize.value)
     save('koel:appearance:motion', reducedMotion.value)
-    const root = document.documentElement
-    const color = accents[accent.value]
-    const bg = surfaces[surface.value]
-    root.style.setProperty('--user-accent', color.main)
-    root.style.setProperty('--user-accent-hover', color.hover)
-    root.style.setProperty('--user-accent-rgb', color.rgb)
-    root.style.setProperty('--user-base', bg.base)
-    root.style.setProperty('--user-sidebar', bg.sidebar)
-    root.style.setProperty('--user-panel', bg.panel)
-    root.style.setProperty('--user-elevated', bg.elevated)
-    root.style.setProperty('--user-border', bg.border)
-    root.dataset.cornerStyle = corners.value
-    root.dataset.fontSize = fontSize.value
-    root.dataset.reduceMotion = String(reducedMotion.value)
-  }, { immediate: true })
+  }, { immediate: true, flush: 'sync' })
+
+  // Apply updates from another window without overwriting its other preferences.
+  window.addEventListener('storage', event => {
+    if (event.storageArea !== localStorage) return
+    switch (event.key) {
+      case 'koel:compact':
+        compact.value = loadChoice<'true' | 'false'>('koel:compact', { true: true, false: false }, 'false') === 'true'
+        break
+      case 'koel:appearance:accent': accent.value = loadChoice('koel:appearance:accent', accents, 'violet'); break
+      case 'koel:appearance:surface': surface.value = loadChoice('koel:appearance:surface', surfaces, 'midnight'); break
+      case 'koel:appearance:corners': corners.value = loadChoice<CornerStyle>('koel:appearance:corners', { rounded: true, square: true }, 'rounded'); break
+      case 'koel:appearance:font': fontSize.value = loadChoice<FontSize>('koel:appearance:font', { normal: true, large: true }, 'normal'); break
+      case 'koel:appearance:motion':
+        reducedMotion.value = loadChoice<'true' | 'false'>('koel:appearance:motion', { true: true, false: false }, 'false') === 'true'
+        break
+      default: return
+    }
+  })
 
   function resetAppearance(): void {
     accent.value = 'violet'

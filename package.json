@@ -1,6 +1,6 @@
 {
   "name": "koel-desktop-2",
-  "version": "0.7.6",
+  "version": "0.7.8",
   "private": true,
   "description": "Koel Desktop 2.0 - client Windows et Linux pour Koel 9.15+, playlists et Discord",
   "main": "./out/main/index.js",

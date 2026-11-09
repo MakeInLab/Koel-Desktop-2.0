@@ -89,7 +89,7 @@ const pageTitle = computed(() => {
       </nav>
       <div class="side-label side-label-secondary">APPLICATION</div>
       <nav class="navigation"><RouterLink to="/settings" class="nav-link"><span>⚙</span> Paramètres</RouterLink></nav>
-      <div class="sidebar-bottom"><span class="status-dot" :style="{ background: koel.connected ? '#4fd9a2' : '#bd90ef' }"></span> {{ koel.connected ? koel.session?.url : 'Non connecté' }} <small>{{ platform }} · v{{ version }}</small></div>
+      <div class="sidebar-bottom"><span class="status-dot" :style="{ background: koel.connected ? '#4fd9a2' : 'var(--user-accent)' }"></span> {{ koel.connected ? koel.session?.url : 'Non connecté' }} <small>{{ platform }} · v{{ version }}</small></div>
     </aside>
 
     <section class="main-area">

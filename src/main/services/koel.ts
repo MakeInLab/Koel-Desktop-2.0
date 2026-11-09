@@ -152,7 +152,9 @@ function parseAlbum(input: unknown): KoelAlbum | null {
   const x = asObject(input)
   if (typeof x.id !== 'string' && typeof x.id !== 'number') return null
   return { id: String(x.id), name: typeof x.name === 'string' ? x.name : 'Album sans titre',
-    artist: typeof x.artist_name === 'string' ? x.artist_name : 'Artiste inconnu',
+    artist: typeof x.artist_name === 'string' ? x.artist_name
+      : typeof x.artistName === 'string' ? x.artistName
+      : typeof asObject(x.artist).name === 'string' ? asObject(x.artist).name as string : 'Artiste inconnu',
     artistId: x.artist_id == null ? null : String(x.artist_id),
     year: typeof x.year === 'number' && Number.isFinite(x.year) ? x.year : null,
     cover: safeArtwork(x.small_cover ?? x.cover) }
@@ -210,6 +212,7 @@ function responseItem(raw: unknown, label: string): unknown {
 }
 function auth(): Auth { if (!current) throw new Error('Connectez-vous au serveur Koel.'); return current }
 function validPage(page: number): void { if (!Number.isInteger(page) || page < 1 || page > 10000) throw new Error('Numéro de page invalide.') }
+function validCatalogPageSize(size: number): void { if (!Number.isInteger(size) || size < 1 || size > 100) throw new Error('Taille de page invalide.') }
 function parsePage<T>(raw: unknown, page: number, parse: (value: unknown) => T | null): KoelCatalogPage<T> {
   const object = asObject(raw)
   if (!Array.isArray(object.data)) throw new Error('Format de réponse Koel non reconnu.')
@@ -219,15 +222,17 @@ function parsePage<T>(raw: unknown, page: number, parse: (value: unknown) => T |
   const nextPage = typeof links.next === 'string' && links.next ? page + 1 : null
   return { items, nextPage, total: typeof meta.total === 'number' ? meta.total : null }
 }
-export async function loadAlbums(page: number): Promise<KoelCatalogPage<KoelAlbum>> {
+export async function loadAlbums(page: number, perPage = 10): Promise<KoelCatalogPage<KoelAlbum>> {
   validPage(page)
+  validCatalogPageSize(perPage)
   const a = auth()
-  return parsePage(await request<unknown>(a.baseUrl, `albums?per_page=50&page=${page}`, 'GET', a.token), page, parseAlbum)
+  return parsePage(await request<unknown>(a.baseUrl, `albums?per_page=${perPage}&page=${page}`, 'GET', a.token), page, parseAlbum)
 }
-export async function loadArtists(page: number): Promise<KoelCatalogPage<KoelArtist>> {
+export async function loadArtists(page: number, perPage = 10): Promise<KoelCatalogPage<KoelArtist>> {
   validPage(page)
+  validCatalogPageSize(perPage)
   const a = auth()
-  return parsePage(await request<unknown>(a.baseUrl, `artists?per_page=50&page=${page}`, 'GET', a.token), page, parseArtist)
+  return parsePage(await request<unknown>(a.baseUrl, `artists?per_page=${perPage}&page=${page}`, 'GET', a.token), page, parseArtist)
 }
 export async function loadPlaylists(): Promise<KoelPlaylist[]> {
   const a = auth()
@@ -277,24 +282,90 @@ export async function loadCollectionSongs(type: 'albums' | 'artists' | 'playlist
   const raw = await request<unknown>(a.baseUrl, `${type}/${encodeURIComponent(id)}/songs`, 'GET', a.token)
   return responseArray(raw, 'titres', 'songs').map(toSong).filter((item): item is KoelSong => item !== null)
 }
+/**
+ * Koel installations can expose different response envelopes for the three
+ * instant-search resources. Keep missing endpoints distinct from true empty
+ * results, and use the paginated library as a bounded fallback.
+ */
+function searchResponseItems(raw: unknown, kind: 'songs' | 'albums' | 'artists'): unknown[] {
+  if (Array.isArray(raw)) return raw
+  let value: unknown = raw
+  for (let depth = 0; depth < 4; depth++) {
+    const o = asObject(value)
+    if (Array.isArray(o[kind])) return o[kind] as unknown[]
+    if (Array.isArray(o.data)) return o.data
+    if (Array.isArray(o.items)) return o.items
+    if (o.data && typeof o.data === 'object') { value = o.data; continue }
+    break
+  }
+  throw new Error(`Format de recherche ${kind} non reconnu.`)
+}
+
+/** Search the actual catalogue when a server's instant-search endpoint is missing or incomplete. */
+async function searchCatalogFallback<T extends {id: string}>(
+  kind: 'albums' | 'artists', query: string, parse: (raw: unknown) => T | null,
+  matches: (item: T, query: string) => boolean
+): Promise<{ items: T[]; complete: boolean }> {
+  const a = auth()
+  const items: T[] = []
+  const ids = new Set<string>()
+  // Avoid unbounded requests on very large libraries. Warn rather than silently
+  // claiming zero results if the scan did not reach the last page.
+  const MAX_SEARCH_PAGES = 30
+  for (let page = 1; page <= MAX_SEARCH_PAGES; page++) {
+    const raw = await request<unknown>(a.baseUrl, `${kind}?per_page=100&page=${page}`, 'GET', a.token)
+    const parsed = parsePage(raw, page, parse)
+    for (const item of parsed.items) {
+      if (matches(item, query) && !ids.has(item.id)) { ids.add(item.id); items.push(item) }
+    }
+    if (!parsed.nextPage) return { items, complete: true }
+  }
+  return { items, complete: false }
+}
+
 export async function search(query: string): Promise<KoelSearchResult> {
   if (typeof query !== 'string' || query.length > 150) throw new Error('Recherche trop longue.')
   const q = query.trim()
   if (q.length < 2) return { songs: [], albums: [], artists: [] }
   const a = auth(), arg = `q=${encodeURIComponent(q)}`
-  // Dedicated search endpoints; unlike library filtering they cover the whole server.
-  const results = await Promise.allSettled([
-    request<unknown>(a.baseUrl, `search/songs?${arg}`, 'GET', a.token),
-    request<unknown>(a.baseUrl, `search/albums?${arg}`, 'GET', a.token),
-    request<unknown>(a.baseUrl, `search/artists?${arg}`, 'GET', a.token)
-  ])
-  if (results.every(result => result.status === 'rejected')) throw (results[0] as PromiseRejectedResult).reason
-  const getItems = <T>(idx: number, mapper: (value: unknown) => T | null): T[] => {
-    const result = results[idx]
-    if (result.status !== 'fulfilled') return []
-    return responseArray(result.value, 'résultats de recherche').map(mapper).filter((item): item is T => item !== null)
+  const kinds = ['songs', 'albums', 'artists'] as const
+  const results = await Promise.allSettled(kinds.map(kind => request<unknown>(a.baseUrl, `search/${kind}?${arg}`, 'GET', a.token)))
+  const warnings: string[] = []
+  const parsed: unknown[][] = [[], [], []]
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i]
+    if (result.status === 'fulfilled') {
+      try { parsed[i] = searchResponseItems(result.value, kinds[i]) }
+      catch { warnings.push(`Réponse de recherche ${kinds[i]} non reconnue.`) }
+    } else { warnings.push(`Recherche directe ${kinds[i]} indisponible.`) }
   }
-  return { songs: getItems(0, toSong), albums: getItems(1, parseAlbum), artists: getItems(2, parseArtist) }
+  const songs = parsed[0].map(toSong).filter((x): x is KoelSong => x !== null)
+  let albums = parsed[1].map(parseAlbum).filter((x): x is KoelAlbum => x !== null)
+  let artists = parsed[2].map(parseArtist).filter((x): x is KoelArtist => x !== null)
+  // Albums can match through their artist name, even when the album title does not.
+  // Some Koel servers return empty arrays instead of an error on these endpoints.
+  const needle = q.toLocaleLowerCase()
+  const fallbackTasks: Promise<void>[] = []
+  if (!albums.length) fallbackTasks.push((async () => {
+    try {
+      const fallback = await searchCatalogFallback('albums', needle, parseAlbum,
+        (item, term) => item.name.toLocaleLowerCase().includes(term) || item.artist.toLocaleLowerCase().includes(term))
+      albums = fallback.items
+      if (!fallback.complete) warnings.push('Recherche d’albums partielle : la bibliothèque est trop grande.')
+    } catch { warnings.push('Impossible de compléter la recherche des albums depuis la bibliothèque.') }
+  })())
+  if (!artists.length) fallbackTasks.push((async () => {
+    try {
+      const fallback = await searchCatalogFallback('artists', needle, parseArtist,
+        (item, term) => item.name.toLocaleLowerCase().includes(term))
+      artists = fallback.items
+      if (!fallback.complete) warnings.push('Recherche d’artistes partielle : la bibliothèque est trop grande.')
+    } catch { warnings.push('Impossible de compléter la recherche des artistes depuis la bibliothèque.') }
+  })())
+  await Promise.all(fallbackTasks)
+  if (!songs.length && !albums.length && !artists.length && warnings.length)
+    throw new Error(`Recherche Koel incomplète : ${warnings.join(' ')}`)
+  return { songs, albums, artists, warnings }
 }
 
 export async function loadSongs(page: number): Promise<KoelPage> {

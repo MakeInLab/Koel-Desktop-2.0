@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 const props = withDefaults(defineProps<{ src?: string | null; color?: string; size?: string; symbol?: string; label?: string }>(), {
-  color: '#875ace', size: '72px', symbol: '♫', label: 'Illustration'
+  color: 'var(--user-accent)', size: '72px', symbol: '♫', label: 'Illustration'
 })
 const failed = ref(false)
 watch(() => props.src, () => { failed.value = false })

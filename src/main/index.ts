@@ -22,9 +22,22 @@ let settings: DesktopSettings = { discordEnabled: false, discordClientId: DISCOR
 let playback: PresenceSnapshot = { song: null, playing: false, time: 0, duration: 0 }
 let lastNotified = ''
 
-function assetPath(name: string): string { return app.isPackaged ? join(process.resourcesPath, 'resources', name) : join(app.getAppPath(), 'resources', name) }
+// The packagers install icon/tray files DIRECTLY into Electron's resources/
+// directory. process.resourcesPath already ends in `resources`, so never add
+// a second `resources/` segment in packaged builds.
+function assetPath(name: string): string {
+  return app.isPackaged ? join(process.resourcesPath, name) : join(app.getAppPath(), 'resources', name)
+}
 function configFile(): string { return join(app.getPath('userData'), 'desktop-settings.json') }
 function boundsFile(): string { return join(app.getPath('userData'), 'window-bounds.json') }
+function miniBoundsFile(): string { return join(app.getPath('userData'), 'mini-player-bounds.json') }
+const MINI_MIN_WIDTH = 380
+const MINI_MIN_HEIGHT = 190
+const MINI_DEFAULT_WIDTH = 488
+const MINI_DEFAULT_HEIGHT = 208
+// Reference: the requested largest mini-player is approximately 600 × 300.
+const MINI_MAX_WIDTH = 600
+const MINI_MAX_HEIGHT = 300
 function stateFile(): string { return join(app.getPath('userData'), 'window-state.json') }
 function shouldStartMaximized(): boolean { return record(readJson(stateFile())).maximized === true }
 function persistMaximized(maximized: boolean): void {
@@ -75,6 +88,26 @@ function saveBounds(): void {
   if (!mainWindow || mainWindow.isDestroyed() || miniMode || isTransitioningMini || mainWindow.isMinimized() || mainWindow.isMaximized()) return
   try { writeFileSync(boundsFile(), JSON.stringify(mainWindow.getBounds())) } catch { /* unavailable disk */ }
 }
+function savedMiniSize(): { width: number; height: number } {
+  const b = record(readJson(miniBoundsFile()))
+  const width = typeof b.width === 'number' ? b.width : MINI_DEFAULT_WIDTH
+  const height = typeof b.height === 'number' ? b.height : MINI_DEFAULT_HEIGHT
+  return {
+    width: Number.isFinite(width) ? Math.max(MINI_MIN_WIDTH, Math.min(MINI_MAX_WIDTH, Math.round(width))) : MINI_DEFAULT_WIDTH,
+    height: Number.isFinite(height) ? Math.max(MINI_MIN_HEIGHT, Math.min(MINI_MAX_HEIGHT, Math.round(height))) : MINI_DEFAULT_HEIGHT
+  }
+}
+function saveMiniSize(): void {
+  if (!mainWindow || mainWindow.isDestroyed() || !miniMode || isTransitioningMini || mainWindow.isMinimized()) return
+  try {
+    const { width, height } = mainWindow.getBounds()
+    // Persist only a size the mini window can actually restore.
+    writeFileSync(miniBoundsFile(), JSON.stringify({
+      width: Math.max(MINI_MIN_WIDTH, Math.min(MINI_MAX_WIDTH, width)),
+      height: Math.max(MINI_MIN_HEIGHT, Math.min(MINI_MAX_HEIGHT, height))
+    }), 'utf8')
+  } catch (error) { console.warn('[Mini player] Could not save window size:', error) }
+}
 function hardenWindow(win: BrowserWindow): void {
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
   win.webContents.on('will-attach-webview', event => event.preventDefault())
@@ -99,14 +132,14 @@ function createWindow(): void {
     ...savedBounds, width: savedBounds?.width ?? 1320, height: savedBounds?.height ?? 840,
     minWidth: 940, minHeight: 600, backgroundColor: '#0b0d14', title: 'Koel Desktop', autoHideMenuBar: true,
     frame: false, thickFrame: true,
-    icon: assetPath('icon.png'),
+    icon: assetPath(process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
     webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true, devTools: !app.isPackaged, allowRunningInsecureContent: false }
   })
   hardenWindow(mainWindow)
   // The X button always closes the window. No hidden background process.
-  mainWindow.on('close', saveBounds)
+  mainWindow.on('close', () => { saveBounds(); saveMiniSize() })
   mainWindow.on('move', saveBounds)
-  mainWindow.on('resize', saveBounds)
+  mainWindow.on('resize', () => { saveBounds(); saveMiniSize() })
   mainWindow.on('maximize', () => { persistMaximized(true); emitWindowState() })
   mainWindow.on('unmaximize', () => { persistMaximized(false); emitWindowState() })
   loadUI(mainWindow)
@@ -117,6 +150,7 @@ function createWindow(): void {
 function setMiniMode(enabled: boolean): void {
   if (!mainWindow || mainWindow.isDestroyed() || miniMode === enabled) return
   const win = mainWindow
+  if (!enabled) saveMiniSize()
   isTransitioningMini = true
   try {
     if (enabled) {
@@ -129,18 +163,28 @@ function setMiniMode(enabled: boolean): void {
       if (win.isMaximized()) win.unmaximize()
 
       win.setResizable(true)
-      win.setMinimumSize(360, 145)
+      win.setMinimumSize(MINI_MIN_WIDTH, MINI_MIN_HEIGHT)
+      win.setMaximumSize(MINI_MAX_WIDTH, MINI_MAX_HEIGHT)
+      win.setMaximizable(false)
       const area = screen.getDisplayMatching(normalBounds).workArea
-      const width = 488, height = 208
+      const stored = savedMiniSize()
+      // Keep the whole widget reachable when monitors or resolution change.
+      const width = Math.min(stored.width, Math.max(MINI_MIN_WIDTH, area.width))
+      const height = Math.min(stored.height, Math.max(MINI_MIN_HEIGHT, area.height))
       const x = Math.max(area.x, Math.min(normalBounds.x, area.x + area.width - width))
       const y = Math.max(area.y, Math.min(normalBounds.y, area.y + area.height - height))
       miniMode = true
       win.setBounds({ x, y, width, height }, false)
-      win.setResizable(false)
+      // Keep native resizing enabled, including on frameless Windows windows.
+      win.setResizable(true)
       win.setAlwaysOnTop(true, 'floating')
     } else {
+      // Mini dimensions have been saved before starting this transition.
       win.setAlwaysOnTop(false)
       win.setResizable(true)
+      // Restore full-window constraints BEFORE restoring its large rectangle.
+      win.setMaximumSize(10000, 10000)
+      win.setMaximizable(true)
       win.setMinimumSize(360, 145)
       const bounds = normalBounds ?? mainBounds() ?? { width: 1320, height: 840 }
       win.setBounds(bounds, false)
@@ -176,12 +220,38 @@ function updateTray(): void {
   ]))
 }
 function setupTray(): void {
-  const icon = nativeImage.createFromPath(assetPath('tray.png'))
-  tray = new Tray(icon)
-  tray.setToolTip('Koel Desktop')
-  tray.on('double-click', showMain)
-  tray.on('click', showMain)
-  updateTray()
+  // Windows: prefer the multi-resolution ICO, then the transparent PNG.
+  // The final fallbacks are the application's own icon assets.
+  // Every candidate must resolve to the same location used by the packagers.
+  const candidates = process.platform === 'win32'
+    ? ['tray.ico', 'tray.png', 'icon.ico', 'icon.png']
+    : ['tray.png', 'icon.png']
+  let image = nativeImage.createEmpty()
+  for (const candidate of candidates) {
+    const path = assetPath(candidate)
+    const loaded = nativeImage.createFromPath(path)
+    if (!loaded.isEmpty()) {
+      image = loaded
+      break
+    }
+    console.warn(`[Tray] Failed to load icon: ${path}`)
+  }
+  // Never create a Tray with an empty image: Windows would show a blank slot.
+  if (image.isEmpty()) {
+    console.error('[Tray] No usable icon found in packaged resources')
+    return
+  }
+  try {
+    tray = new Tray(image)
+    tray.setToolTip('Koel Desktop')
+    tray.on('double-click', showMain)
+    tray.on('click', showMain)
+    updateTray()
+  } catch (error) {
+    // Some Linux environments do not provide a notification area.
+    console.error('[Tray] Failed to initialize notification icon:', error)
+    tray = null
+  }
 }
 const mediaKeys = [ ['MediaPlayPause', 'toggle'], ['MediaNextTrack', 'next'], ['MediaPreviousTrack', 'previous'] ] as const
 function setMediaKeys(enabled: boolean): void {

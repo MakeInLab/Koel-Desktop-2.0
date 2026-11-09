@@ -430,3 +430,166 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline-color:var(--use
   border-radius:var(--user-radius)!important;
 }
 :root[data-font-size="large"] .mini-widget-info{font-size:1.075em}
+
+/* v0.7.8: consistent accent and surface colors, even on home and settings. */
+:root { color-scheme: dark; }
+.main-area { background: var(--user-base); }
+.welcome { background: linear-gradient(110deg,var(--user-elevated),var(--user-panel) 55%,var(--user-sidebar)); }
+.welcome .eyebrow,.welcome h1 em { color:var(--user-accent-hover); }
+.demo-pill { background:rgba(var(--user-accent-rgb),.12);color:var(--user-accent-hover);border-color:rgba(var(--user-accent-rgb),.32); }
+.avatar { background:linear-gradient(135deg,var(--user-accent),var(--user-elevated)); }
+.status-dot { background:var(--user-accent); }
+.side-label,.eyebrow,.section-heading h2 small { color:var(--user-accent-hover); }
+.song-list { border-color:var(--user-border);background:var(--user-panel); }
+.song-line { border-color:var(--user-border); }
+.song-line:hover,.song-line.selected { background:rgba(var(--user-accent-rgb),.10); }
+.appearance-swatch:focus-visible,.appearance-theme:focus-visible { outline:2px solid var(--user-accent);outline-offset:3px; }
+:root[data-reduce-motion="true"] { scroll-behavior:auto; }
+
+
+/* v0.7.8 — eliminate remaining hard-coded violet UI chrome.
+   Album artwork and semantic success/error colors are intentionally independent. */
+:root {
+  --theme-accent-soft:rgba(var(--user-accent-rgb),.10);
+  --theme-accent-medium:rgba(var(--user-accent-rgb),.18);
+  --theme-accent-outline:rgba(var(--user-accent-rgb),.40);
+  --theme-text:#eef0f7;
+  --theme-muted:#a9abbc;
+}
+/* Action surfaces and playlist creation */
+.primary-btn {background:var(--user-accent);color:#16151b}
+.primary-btn:hover:not(:disabled){background:var(--user-accent-hover)}
+.playlist-create-form,.playlist-hint{background:var(--user-panel);border-color:var(--user-border)}
+.playlist-create-form label{color:var(--theme-text)}
+.playlist-create-form input,.playlist-create-form textarea{background:var(--user-base);border-color:var(--user-border);color:var(--theme-text)}
+.playlist-create-form input:focus,.playlist-create-form textarea:focus,.playlist-picker:focus{outline-color:var(--user-accent)}
+.playlist-hint{color:var(--theme-muted)}
+.song-actions .playlist-picker{background:var(--user-elevated);border-color:var(--user-border);color:var(--theme-text)}
+/* Add-to-playlist popup, including all interactive states */
+.playlist-menu-trigger{background:var(--user-elevated);border-color:var(--user-border);color:var(--theme-text)}
+.playlist-menu-trigger:hover:not(:disabled),.playlist-menu-trigger[aria-expanded="true"]{background:var(--theme-accent-medium);border-color:var(--user-accent)}
+.playlist-menu-panel{background:var(--user-elevated);border-color:var(--user-border);color:var(--theme-text)}
+.playlist-menu-header button{background:var(--user-panel);color:var(--theme-text)}
+.playlist-menu-header button:hover{background:var(--theme-accent-medium)}
+.playlist-menu-song,.playlist-menu-muted{color:var(--theme-muted)}
+.playlist-menu-search{background:var(--user-base);border-color:var(--user-border)}
+.playlist-menu-items button{color:var(--theme-text)}
+.playlist-menu-items button:hover:not(:disabled){background:var(--theme-accent-soft)}
+.playlist-menu-icon{background:var(--theme-accent-medium);color:var(--user-accent-hover)}
+.playlist-menu-create{background:var(--user-panel);border-color:var(--user-border);color:var(--user-accent-hover)}
+.playlist-menu-create:hover{background:var(--theme-accent-medium);border-color:var(--user-accent)}
+.playlist-menu-new input{background:var(--user-base);border-color:var(--user-border);color:var(--theme-text)}
+.playlist-menu-new input:focus{outline-color:var(--user-accent)}
+.playlist-menu-new button{background:var(--user-accent);color:#16151b}
+.playlist-menu-new button:hover:not(:disabled){background:var(--user-accent-hover)}
+/* Compact controls and track progress */
+.play-controls button:focus-visible,.mini-widget-controls button:focus-visible,.player-mute-button:focus-visible,
+.mini-widget button:focus-visible,.mini-widget input:focus-visible{outline-color:var(--user-accent)}
+.progress .seek-slider::-webkit-slider-thumb,.mini-widget-timeline input::-webkit-slider-thumb{box-shadow:0 0 0 2px var(--theme-accent-outline)}
+.mini-widget-volume input,.mini-widget-timeline input,.mini-shell-mode .volume-control input{accent-color:var(--user-accent)}
+.mini-widget-controls .mini-control.is-on,.mini-control.is-on{color:var(--user-accent);background:var(--theme-accent-soft)}
+.mini-widget-placeholder,.mini-placeholder{background:linear-gradient(135deg,var(--user-accent),var(--user-elevated))}
+.mini-window-btn{background:var(--user-elevated);border-color:var(--user-border);color:var(--theme-text)}
+.mini-window-btn:hover{background:var(--theme-accent-medium);border-color:var(--user-accent)}
+/* Secondary controls and scrollbars */
+.heart{color:var(--user-accent)}
+.volume-control .mini-open{color:var(--user-accent)}
+*{scrollbar-color:var(--user-border) var(--user-base)}
+*::-webkit-scrollbar,*::-webkit-scrollbar-track,*::-webkit-scrollbar-corner{background:var(--user-base)}
+*::-webkit-scrollbar-thumb{background:var(--user-border);border-color:var(--user-base)}
+*::-webkit-scrollbar-thumb:hover,*::-webkit-scrollbar-thumb:active{background:var(--user-accent)}
+.sidebar::-webkit-scrollbar-track{background:var(--user-sidebar)}
+.sidebar::-webkit-scrollbar-thumb{background:var(--user-border);border-color:var(--user-sidebar)}
+.sidebar::-webkit-scrollbar-thumb:hover{background:var(--user-accent)}
+/* Artwork placeholder stays neutral until an actual cover is loaded. */
+.artwork{background:radial-gradient(circle at 75% 25%,#ffffff36,transparent 34%),linear-gradient(135deg,var(--art-color,var(--user-accent)),var(--user-elevated))}
+
+/* v0.7.8 — visual consistency follow-up: no fixed pink/violet interface chrome.
+   The welcome illustration is part of the theme, not album artwork. */
+.welcome .vinyl {
+  background:repeating-radial-gradient(circle,
+    var(--user-base) 0px,var(--user-base) 3px,
+    var(--user-border) 4px,var(--user-elevated) 6px);
+  box-shadow:0 22px 75px rgba(0,0,0,.38);
+}
+.welcome .vinyl span {
+  background:linear-gradient(125deg,var(--user-accent-hover),var(--user-accent));
+  border-color:var(--user-base);
+  color:var(--user-base);
+}
+.welcome p {color:var(--theme-muted)}
+.top-search {color:var(--user-accent-hover);border-color:var(--theme-accent-outline)}
+.top-search:hover {background:var(--theme-accent-soft)}
+.window-btn,.song-actions button,.queue-btn,.queue-size {
+  background:var(--user-elevated);
+  border-color:var(--user-border);
+  color:var(--theme-text);
+}
+.window-btn:hover,.song-actions button:hover,.queue-btn:hover,.queue-size:hover {
+  background:var(--theme-accent-medium);
+  border-color:var(--theme-accent-outline);
+}
+.window-btn-close:hover {background:#7a2f45;border-color:#c96886;color:#fff}
+.song-actions button:focus-visible,.queue-btn:focus-visible {outline-color:var(--user-accent)}
+.count-pill {background:var(--theme-accent-soft);color:var(--user-accent-hover)}
+.connection-form input:focus {border-color:var(--user-accent)}
+.connection-form input[type=checkbox] {accent-color:var(--user-accent)}
+.secondary-btn {background:var(--user-elevated);border-color:var(--user-border);color:var(--theme-text)}
+.secondary-btn:hover {border-color:var(--user-accent);background:var(--theme-accent-soft)}
+.notice {background:var(--theme-accent-soft);border-color:var(--theme-accent-outline);color:var(--theme-text)}
+/* Keep legacy range sliders consistent across full and mini modes. */
+.volume-control input,.mini-shell-mode .volume-control input,.mini-widget-volume input {accent-color:var(--user-accent)}
+/* Make the top-level content legible in every dark surface preset. */
+:root {text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+
+/* v0.7.8 — resizable mini player. Flex the content while keeping controls reachable. */
+.shell.mini-shell-mode .mini-widget{
+  box-sizing:border-box;
+  width:100%;height:100%;min-width:0;
+  grid-template-rows:minmax(24px,auto) minmax(58px,1fr) minmax(43px,auto) minmax(24px,auto);
+  align-content:stretch;
+  row-gap:clamp(4px,1.5vh,14px);
+  padding:clamp(8px,2vw,18px);
+}
+.mini-shell-mode .mini-widget-track{min-height:0;min-width:0}
+.mini-shell-mode .mini-widget-controls{gap:clamp(7px,3vw,26px);min-width:0}
+.mini-shell-mode .mini-widget-volume{flex:0 1 100px;min-width:0}
+.mini-shell-mode .mini-widget-volume input{min-width:0;max-width:64px;width:100%}
+.mini-shell-mode .mini-widget-info{min-width:0}
+.mini-shell-mode .mini-widget-timeline{min-width:0}
+@media (max-width:460px){
+  .mini-shell-mode .mini-widget-track{gap:7px}
+  .mini-shell-mode .mini-widget-track .artwork,
+  .mini-shell-mode .mini-placeholder{width:48px!important;height:48px!important;flex-basis:48px}
+  .mini-shell-mode .mini-widget-info strong{font-size:13px}
+  .mini-shell-mode .mini-widget-info span{font-size:11px}
+  .mini-shell-mode .mini-widget-volume{flex-basis:66px;padding:4px}
+  .mini-shell-mode .mini-widget-volume input{max-width:30px}
+  .mini-shell-mode .mini-widget-controls{gap:8px}
+  .mini-shell-mode .mini-widget-controls .mini-control{width:34px;height:34px;flex-basis:34px}
+  .mini-shell-mode .mini-widget-controls .mini-control.mini-play{width:40px;height:40px;flex-basis:40px}
+}
+
+/* v0.7.8 — capped mini window: center the track in the flexible middle row.
+   At 380×190 and at 600×300, playback controls and the seek bar stay visible. */
+.shell.mini-shell-mode .mini-widget{
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:24px minmax(0,1fr) 44px 24px;
+  row-gap:clamp(3px,1.5vh,9px);
+  padding:clamp(9px,1.7vw,14px);
+}
+.mini-shell-mode .mini-widget-track{align-self:stretch;justify-self:stretch;align-items:center}
+.mini-shell-mode .mini-widget-controls{align-self:center}
+.mini-shell-mode .mini-widget-timeline{align-self:center}
+@media (min-width:540px) and (min-height:260px){
+  .mini-shell-mode .mini-widget-track .artwork,
+  .mini-shell-mode .mini-placeholder{width:66px!important;height:66px!important;flex-basis:66px}
+  .mini-shell-mode .mini-widget-info strong{font-size:16px}
+  .mini-shell-mode .mini-widget-controls{gap:26px}
+}
+@media (max-height:215px){
+  .shell.mini-shell-mode .mini-widget{grid-template-rows:22px minmax(0,1fr) 40px 20px;row-gap:3px;padding:7px 10px}
+  .mini-shell-mode .mini-widget-track .artwork,
+  .mini-shell-mode .mini-placeholder{width:46px!important;height:46px!important;flex-basis:46px}
+  .mini-shell-mode .mini-widget-controls .mini-control.mini-play{height:38px;width:38px;flex-basis:38px}
+}
